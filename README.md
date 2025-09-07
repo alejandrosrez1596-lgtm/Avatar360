@@ -35,7 +35,7 @@
     const HF_API_KEY = "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";
     let selectedVoice = null;
 
-    // Llenar el selector de voces
+    // Cargar voces disponibles
     function cargarVoces() {
       let voces = speechSynthesis.getVoices();
       let select = document.getElementById("vozSelect");
@@ -48,36 +48,31 @@
         select.appendChild(option);
       });
 
-      // Guardar la voz seleccionada
       select.onchange = () => {
         selectedVoice = voces[select.value];
       };
 
-      // Por defecto seleccionar la primera voz
       if (voces.length > 0) {
         selectedVoice = voces[0];
       }
     }
-
     window.speechSynthesis.onvoiceschanged = cargarVoces;
 
-    // Hablar con voz seleccionada
+    // Función para hablar
     function hablar(texto) {
       let utter = new SpeechSynthesisUtterance(texto);
       utter.lang = "es-ES";
-      if (selectedVoice) {
-        utter.voice = selectedVoice;
-      }
+      if (selectedVoice) utter.voice = selectedVoice;
       speechSynthesis.speak(utter);
     }
 
-    // Consultar IA en Hugging Face
+    // Consultar IA Hugging Face
     async function consultarIA(pregunta) {
       let prompt = `Eres un avatar experto en HISTORIA DEL ARTE.
       Si la pregunta no es sobre historia del arte, responde: "Lo siento, no tengo información sobre eso."
       Pregunta: ${pregunta}`;
 
-      let response = await fetch("https://api-inference.huggingface.co/models/google/flan-t5-small", {
+      let response = await fetch("https://api-inference.huggingface.co/models/google/flan-t5-base", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${HF_API_KEY}`,
@@ -87,8 +82,13 @@
       });
 
       let data = await response.json();
-      console.log(data);
-      return data[0]?.generated_text || data?.generated_text || "Lo siento, no entendí.";
+      console.log("Respuesta IA:", data);
+
+      // Capturar diferentes posibles salidas
+      if (Array.isArray(data) && data[0]) {
+        return data[0].generated_text || data[0].output_text || "Lo siento, no entendí.";
+      }
+      return "Lo siento, no entendí.";
     }
 
     // Responder pregunta
