@@ -7,10 +7,10 @@
 </head>
 <body>
   <a-scene>
-    <!-- Escenario 360 -->
-    <a-sky src="https://cdn.aframe.io/360-image-gallery-boilerplate/img/city.jpg" rotation="0 -90 0"></a-sky>
+    <!-- Escenario 360 (biblioteca real) -->
+    <a-sky src="https://cdn.aframe.io/360-image-gallery-boilerplate/img/library.jpg" rotation="0 -90 0"></a-sky>
 
-    <!-- Avatar Ready Player Me (más centrado) -->
+    <!-- Avatar Ready Player Me (centrado) -->
     <a-entity 
       gltf-model="https://models.readyplayer.me/68bda9d5c11cea25ec396d86.glb" 
       position="0 -1.2 -3" 
@@ -26,11 +26,52 @@
     <input type="text" id="pregunta" placeholder="Hazme una pregunta..." style="width:250px;">
     <button onclick="responder()">Preguntar</button>
     <button onclick="saludar()">Saludar</button>
+    <br><br>
+    <label>Voz:</label>
+    <select id="vozSelect"></select>
   </div>
 
   <script>
     const HF_API_KEY = "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";
+    let selectedVoice = null;
 
+    // Llenar el selector de voces
+    function cargarVoces() {
+      let voces = speechSynthesis.getVoices();
+      let select = document.getElementById("vozSelect");
+      select.innerHTML = "";
+
+      voces.forEach((voz, i) => {
+        let option = document.createElement("option");
+        option.value = i;
+        option.textContent = `${voz.name} (${voz.lang})`;
+        select.appendChild(option);
+      });
+
+      // Guardar la voz seleccionada
+      select.onchange = () => {
+        selectedVoice = voces[select.value];
+      };
+
+      // Por defecto seleccionar la primera voz
+      if (voces.length > 0) {
+        selectedVoice = voces[0];
+      }
+    }
+
+    window.speechSynthesis.onvoiceschanged = cargarVoces;
+
+    // Hablar con voz seleccionada
+    function hablar(texto) {
+      let utter = new SpeechSynthesisUtterance(texto);
+      utter.lang = "es-ES";
+      if (selectedVoice) {
+        utter.voice = selectedVoice;
+      }
+      speechSynthesis.speak(utter);
+    }
+
+    // Consultar IA en Hugging Face
     async function consultarIA(pregunta) {
       let prompt = `Eres un avatar experto en HISTORIA DEL ARTE.
       Si la pregunta no es sobre historia del arte, responde: "Lo siento, no tengo información sobre eso."
@@ -47,23 +88,17 @@
 
       let data = await response.json();
       console.log(data);
-      // corregimos la lectura de la respuesta
       return data[0]?.generated_text || data?.generated_text || "Lo siento, no entendí.";
     }
 
-    function hablar(texto) {
-      let utter = new SpeechSynthesisUtterance(texto);
-      utter.lang = "es-ES";
-      speechSynthesis.speak(utter);
-    }
-
+    // Responder pregunta
     async function responder() {
       let pregunta = document.getElementById("pregunta").value;
       let respuesta = await consultarIA(pregunta);
       hablar(respuesta);
     }
 
-    // Saludo solo cuando el usuario pulse el botón
+    // Saludo manual
     function saludar() {
       hablar("Hola, bienvenido a esta biblioteca virtual. Pregúntame sobre historia del arte.");
     }
