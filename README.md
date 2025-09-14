@@ -32,7 +32,7 @@
   </div>
 
   <script>
-    const HF_API_KEY = "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";
+    const HF_API_KEY = "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";
     let selectedVoice = null;
 
     // Cargar voces disponibles
