@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Avatar Inteligente IA 360</title>
+    <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+    <!-- <link rel="stylesheet" href="styles.css"> -->
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body>
+    <a-scene>
+    <a-sky
+      src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f"
+      rotation="0 -90 0"
+    ></a-sky>
+
+    <a-entity
+      gltf-model="https://models.readyplayer.me/68bda9d5c11cea25ec396d86.glb"
+      position="0 -1.2 -3"
+      scale="1 1 1"
+    ></a-entity>
+
+    <a-entity camera look-controls></a-entity>
+  </a-scene>
+
+  <!-- Interfaz -->
+  <div class="absolute bottom-5 left-5 bg-white/80 backdrop-blur-md shadow-xl rounded-xl p-5 flex flex-col gap-4">
+    <input
+      type="text"
+      id="pregunta"
+      placeholder="Hazme una pregunta..."
+      class="w-64 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+    />
+    <div class="flex gap-3 flex-wrap">
+      <button
+        onclick="responder()"
+        class="px-5 py-2.5 bg-blue-500 text-white font-semibold rounded-lg shadow hover:bg-blue-600 hover:shadow-lg transition-transform transform hover:-translate-y-1 active:translate-y-0.5"
+      >
+        Preguntar
+      </button>
+      <button
+        onclick="saludar()"
+        class="px-5 py-2.5 bg-blue-500 text-white font-semibold rounded-lg shadow hover:bg-blue-600 hover:shadow-lg transition-transform transform hover:-translate-y-1 active:translate-y-0.5"
+      >
+        Saludar
+      </button>
+    </div>
+    <div>
+      <label for="vozSelect" class="font-medium text-sm">Voz:</label>
+      <select
+        id="vozSelect"
+        class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      ></select>
+    </div>
+  </div>
+
+    <script>
+      const HF_API_KEY = "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";
+      let selectedVoice = null;
+
+      // Cargar voces disponibles
+      function cargarVoces() {
+        let voces = speechSynthesis.getVoices();
+        let select = document.getElementById("vozSelect");
+        select.innerHTML = "";
+
+        voces.forEach((voz, i) => {
+          let option = document.createElement("option");
+          option.value = i;
+          option.textContent = `${voz.name} (${voz.lang})`;
+          select.appendChild(option);
+        });
+
+        select.onchange = () => {
+          selectedVoice = voces[select.value];
+        };
+
+        if (voces.length > 0) {
+          selectedVoice = voces[0];
+        }
+      }
+      window.speechSynthesis.onvoiceschanged = cargarVoces;
+
+      // Función para hablar
+      function hablar(texto) {
+        let utter = new SpeechSynthesisUtterance(texto);
+        utter.lang = "es-ES";
+        if (selectedVoice) utter.voice = selectedVoice;
+        speechSynthesis.speak(utter);
+      }
+
+      //Construir el request con el  prompt
+      function construirPrompt(pregunta) {
+        return {
+          messages: [
+            {
+              role: "user",
+              content: `Eres un avatar experto en HISTORIA DEL ARTE.
+          Si la pregunta no es sobre historia del arte, responde: "Lo siento, no tengo información sobre eso."
+          El formato de la respuesta debe ser en texto plano sin usar caracteres especiales ni para negritas, cursivas o listas. 
+          Solo signos de puntuación normales.
+          Pregunta: ${pregunta}`,
+            },
+          ],
+          model: "openai/gpt-oss-120b:cerebras",
+        };
+      }
+
+      // Llamar a la API de Hugging Face
+      async function llamarAPIHuggingFace(prompt) {
+        const response = await fetch(
+          "https://router.huggingface.co/v1/chat/completions",
+          {
+            headers: {
+              Authorization: `Bearer ${HF_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            method: "POST",
+            body: JSON.stringify(prompt),
+          }
+        );
+        return response;
+      }
+
+      // Extraer respuesta de la IA
+      function extraerRespuestaIA(data) {
+        if (Array.isArray(data.choices) && data.choices[0]) {
+          return data.choices[0].message.content || "Lo siento, no entendí.";
+        }
+        return "Lo siento, no entendí.";
+      }
+
+      // Consultar IA
+      async function consultarIA(pregunta) {
+        try {
+          const prompt = construirPrompt(pregunta);
+          const response = await llamarAPIHuggingFace(prompt);
+
+          if (!response.ok) {
+            console.error("Error HTTP:", response.status);
+            return "No se pudo conectar con la IA.";
+          }
+
+          const data = await response.json();
+          console.log("Respuesta IA:", data);
+
+          return extraerRespuestaIA(data);
+        } catch (err) {
+          console.error("Error consultando IA:", err);
+          return "Error al conectar con la IA.";
+        }
+      }
+
+      // Responder pregunta
+      async function responder() {
+        let pregunta = document.getElementById("pregunta").value;
+        let respuesta = await consultarIA(pregunta);
+        hablar(respuesta);
+      }
+
+      // Saludo manual
+      function saludar() {
+        hablar(
+          "Hola, bienvenido a esta biblioteca virtual. Pregúntame sobre historia del arte."
+        );
+      }
+    </script>
+  </body>
+</html>

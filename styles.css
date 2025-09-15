@@ -1,0 +1,131 @@
+:root {
+  --color-bg: rgba(255, 255, 255, 0.85);
+  --color-primary: #3b82f6;
+  --color-primary-hover: #2563eb;
+  --color-text: #111827;
+  --radius: 12px;
+  --transition: 0.3s ease;
+  --font: 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  color: var(--color-text);
+}
+
+.ui-container {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background: var(--color-bg);
+  padding: 16px 20px;
+  border-radius: var(--radius);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ui-container input[type="text"] {
+  padding: 10px 12px;
+  width: 260px;
+  border: 1px solid #d1d5db;
+  border-radius: var(--radius);
+  font-size: 14px;
+  transition: border-color var(--transition);
+}
+.ui-container input[type="text"]:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.ui-container button {
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background var(--transition), transform var(--transition);
+}
+.ui-container button:hover {
+  background: var(--color-primary-hover);
+  transform: translateY(-2px);
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+select {
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  transition: border-color var(--transition);
+}
+select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.ui-container button {
+  background: var(--color-primary); /* Mantenemos el color */
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15); /* Sombra para relieve */
+  position: relative;
+  overflow: hidden; /* Para el efecto ripple */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Hover: sombra más grande y ligera elevación */
+.ui-container button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+}
+
+/* Active: simula presión */
+.ui-container button:active {
+  transform: scale(0.96);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+
+/* Ripple effect al hacer clic */
+.ui-container button::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255,255,255,0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: width 0.5s ease, height 0.5s ease, opacity 0.8s;
+}
+
+.ui-container button:active::after {
+  width: 220%;
+  height: 220%;
+  opacity: 1;
+  transition: 0s;
+}
