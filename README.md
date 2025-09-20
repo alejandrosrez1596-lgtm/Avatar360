@@ -11,3 +11,8 @@ Avatar360 es un proyecto experimental que consiste en un avatar interactivo al q
 ## Uso
 
 Simplemente inicia el avatar y realiza tus preguntas para obtener información relevante y actualizada.
+
+## Desarrollado Por:
+- Maria Camila Morales Galeano
+- Manuel Santiago Leon Rrodriguez
+- Diego Alejandro Zambrano Saurez
